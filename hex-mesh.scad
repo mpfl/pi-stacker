@@ -6,9 +6,6 @@ module hex_mesh(corner_radius = 2, size = 5, thickness = 3, x = 100, y = 150, z 
     hexes_y = ceil(y / (inner_size * 2)) + 1;
     grid_x = (hexes_x * inner_size * 2) + (hexes_x - 1) * thickness;
     grid_y = sin(60) * (hexes_y * inner_size * 2) + (hexes_y - 1) * thickness;
-    echo(grid_x);
-    echo(grid_y);
-    echo(inner_size * 2 + thickness);
 
     difference() {
         cube([x,y,z]);

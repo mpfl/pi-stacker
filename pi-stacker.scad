@@ -34,11 +34,11 @@ mesh_corner_radius = 2;
 mesh_size = 9;
 mesh_thickness = 2;
 
-/*
+
 translate([mini_sled_x/2 + inner_wall_offset + sled_rail_tolerance, mini_sled_y-7 ,sled_height])
     mini_sled();
-*/
-housing();
+
+// housing();
 
 /*
 translate([sled_x/2 + inner_wall_offset + sled_rail_tolerance,sled_y-7,sled_height])

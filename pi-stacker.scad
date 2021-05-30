@@ -14,6 +14,7 @@ sled_x = 65;
 sled_y = 90;
 sled_height = 5;
 sled_rail_tolerance = 0.5;
+sled_standoff_height = 2;
 rail_x = 2;
 
 
@@ -33,18 +34,19 @@ mesh_corner_radius = 2;
 mesh_size = 9;
 mesh_thickness = 2;
 
+/*
 translate([mini_sled_x/2 + inner_wall_offset + sled_rail_tolerance, mini_sled_y-7 ,sled_height])
     mini_sled();
-
+*/
 housing();
 
 /*
 translate([sled_x/2 + inner_wall_offset + sled_rail_tolerance,sled_y-7,sled_height])
     sled();
-*/
+
 translate([ case_wall_thickness / 2,0,case_z - 27.8 - case_wall_thickness])
     # oled_pcb();
-
+*/
 module oled_pcb() {
     cube([27.5,2.7,27.8]);
 }
@@ -82,14 +84,14 @@ module housing() {
             translate([inner_wall_offset, 0, 0])
                 rotate([0,270,0])
                     union() {
-                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + 4, y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner bottom;
+                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + sled_standoff_height, y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner bottom;
                         translate([0,case_y - fan_thickness,0])
                         cube([case_z,fan_thickness,case_wall_thickness]);
                     }
-            translate([inner_wall_offset, 0, sled_height + mini_sled_z + 4 + pi_connector_z])
+            translate([inner_wall_offset, 0, sled_height + mini_sled_z + sled_standoff_height + pi_connector_z])
                 rotate([0,270,0])
                     union() {
-                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z - (sled_height + mini_sled_z + 4 + pi_connector_z), y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner top;
+                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z - (sled_height + mini_sled_z + sled_standoff_height + pi_connector_z), y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner top;
                     }
             translate([0,case_y,0])
                 rotate([90,0,0])
@@ -252,7 +254,7 @@ module sled() {
 }
 
 module mini_standoff() {
-        cylinder(h=4, r = 3);
+        cylinder(h = sled_standoff_height, r = 3);
 }
 
 module standoff() {

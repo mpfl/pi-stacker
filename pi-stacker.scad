@@ -8,7 +8,7 @@ mini_sled_z = 5;
 
 pi_connector_x = 2.5;
 pi_connector_y = 86;
-pi_connector_z = 6;
+pi_connector_z = 8;
 
 sled_x = 65;
 sled_y = 90;
@@ -17,10 +17,11 @@ sled_rail_tolerance = 0.5;
 sled_standoff_height = 2;
 rail_x = 2;
 
+mini_rail_x = 2;
 
 fan_thickness = 12;
-fan_x = 40;
-fan_z = 40;
+fan_x = 40.5;
+fan_z = 40.5;
 
 case_x = 44.45 * 2 - 0.794;
 case_y = sled_y + fan_thickness;
@@ -29,16 +30,16 @@ case_wall_thickness = (case_z - fan_z) / 2;
 
 inner_wall_offset = case_x - (mini_sled_x + rail_x + sled_rail_tolerance * 2);
 
-
 mesh_corner_radius = 2;
 mesh_size = 9;
 mesh_thickness = 2;
 
 
+/*
 translate([mini_sled_x/2 + inner_wall_offset + sled_rail_tolerance, mini_sled_y-7 ,sled_height])
     mini_sled();
-
-// housing();
+*/
+housing();
 
 /*
 translate([sled_x/2 + inner_wall_offset + sled_rail_tolerance,sled_y-7,sled_height])
@@ -99,7 +100,7 @@ module housing() {
             translate([fan_x + (case_x + inner_wall_offset - fan_x)/2,case_y,0])
                 rotate([90,0,0])
                     hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = (case_x - inner_wall_offset - fan_x)/2, y = case_z, z = fan_thickness);  // back right;
-            translate([inner_wall_offset, case_y, sled_height + mini_sled_z/2])
+            translate([inner_wall_offset - case_wall_thickness + mini_rail_x - sled_rail_tolerance / 2, case_y, sled_height + mini_sled_z/2])
                 mini_rails();
 /*
             translate([inner_wall_offset - case_wall_thickness, 0,0])
@@ -119,7 +120,7 @@ module mini_rails() {
 
 module mini_rail() {
     rotate([90,0,0])
-        cylinder(d = 4 - sled_rail_tolerance, h = case_y);
+        cylinder(d = mini_rail_x * 2 - sled_rail_tolerance, h = case_y);
 }
 
 module rails() {
@@ -170,10 +171,10 @@ module mini_sled() {
             cylinder(h = (mini_sled_z) * 2 + 3, d = 2.5);
         translate([mini_sled_x/2,7,mini_sled_z/2])
             rotate([90,0,0])
-                cylinder( h = mini_sled_y, d = 4);
+                cylinder( h = mini_sled_y, r = mini_rail_x);
         translate([-mini_sled_x/2,7,mini_sled_z/2])
             rotate([90,0,0])
-                cylinder( h = mini_sled_y, d = 4);
+                cylinder( h = mini_sled_y, r = mini_rail_x);
 
     }
 }

@@ -95,7 +95,9 @@ module housing() {
     }
 }
 
-module fan_mount() 
+module fan_mount() {
+
+}
 
 module case_end() {
     cube([case_x, fan_thickness, case_wall_thickness]);

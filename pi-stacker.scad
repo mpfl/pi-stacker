@@ -12,16 +12,16 @@ pi_connector_z = 8;
 
 sled_x = 65;
 sled_y = 90;
-sled_height = 5;
-sled_rail_tolerance = 0.5;
+sled_height = 7;
+sled_rail_tolerance = 0.2;
 sled_standoff_height = 2;
 rail_x = 2;
 
 mini_rail_x = 2;
 
 fan_thickness = 12;
-fan_x = 40.5;
-fan_z = 40.5;
+fan_x = 40.2;
+fan_z = 40.2;
 
 case_x = 44.45 * 2 - 0.794;
 case_y = sled_y + fan_thickness;
@@ -73,41 +73,39 @@ module housing() {
             }
 */
         union() {
-            hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y, z = case_wall_thickness);  // bottom;
-            translate([0,0, case_z - case_wall_thickness])
-                hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y, z = case_wall_thickness);  // top;
-            translate([case_wall_thickness, 0, 0])
+            case_end();
+            translate([0,case_y - fan_thickness,0])
+                case_end();
+            translate([0, fan_thickness, 0])
+                hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // bottom mesh;
+            translate([0,fan_thickness, case_z - case_wall_thickness])
+                hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // top mesh;
+            translate([case_wall_thickness, fan_thickness, 0])
                 rotate([0,270,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y, z = case_wall_thickness);  // left;
-            translate([case_x, 0, 0])
+                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // left mesh;
+            translate([case_x, fan_thickness, 0])
                 rotate([0,270,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y, z = case_wall_thickness);  // right;
-            translate([inner_wall_offset, 0, 0])
+                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // right mesh;
+            translate([inner_wall_offset, fan_thickness, 0])
                 rotate([0,270,0])
-                    union() {
-                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + sled_standoff_height, y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner bottom;
-                        translate([0,case_y - fan_thickness,0])
-                        cube([case_z,fan_thickness,case_wall_thickness]);
-                    }
-            translate([inner_wall_offset, 0, sled_height + mini_sled_z + sled_standoff_height + pi_connector_z])
-                rotate([0,270,0])
-                    union() {
-                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z - (sled_height + mini_sled_z + sled_standoff_height + pi_connector_z), y = case_y - fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner top;
-                    }
-            translate([0,case_y,0])
-                rotate([90,0,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = (case_x - inner_wall_offset - fan_x)/2 + inner_wall_offset, y = case_z, z = fan_thickness);  // back left;
-            translate([fan_x + (case_x + inner_wall_offset - fan_x)/2,case_y,0])
-                rotate([90,0,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = (case_x - inner_wall_offset - fan_x)/2, y = case_z, z = fan_thickness);  // back right;
+                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + sled_standoff_height, y = case_y - 2 * fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner bottom mes;
             translate([inner_wall_offset - case_wall_thickness + mini_rail_x - sled_rail_tolerance / 2, case_y, sled_height + mini_sled_z/2])
                 mini_rails();
-/*
-            translate([inner_wall_offset - case_wall_thickness, 0,0])
-                rails();
-*/
         }
     }
+}
+
+module fan_mount() 
+
+module case_end() {
+    cube([case_x, fan_thickness, case_wall_thickness]);
+    translate([0,0,case_z - case_wall_thickness])
+        cube([case_x, fan_thickness, case_wall_thickness]);
+    cube([case_wall_thickness, fan_thickness, case_z]);
+    translate([case_x - case_wall_thickness, 0, 0])
+        cube([case_wall_thickness, fan_thickness, case_z]);
+    translate([inner_wall_offset - case_wall_thickness, 0, 0])
+        cube([case_wall_thickness, fan_thickness, case_z]);
 }
 
 module mini_rails() {
@@ -120,30 +118,7 @@ module mini_rails() {
 
 module mini_rail() {
     rotate([90,0,0])
-        cylinder(d = mini_rail_x * 2 - sled_rail_tolerance, h = case_y);
-}
-
-module rails() {
-    rail();
-    translate([sled_x + rail_x + case_wall_thickness + sled_rail_tolerance * 2,0,0])
-        mirror([1,0,0])
-            rail();
-}
-
-module rail() {
-    difference() {
-        translate([case_wall_thickness,case_y,sled_height + sled_rail_tolerance])
-            rotate([90,0,0])
-                hexagon(corner_radius = mesh_corner_radius, size = rail_x - mesh_corner_radius, z = case_y, quality = 30); // rail
-        translate([rail_x - sled_rail_tolerance,-sled_rail_tolerance,sled_height - sled_rail_tolerance])
-           rail_cutout(); // sled cutout
-        translate([-12,-sled_rail_tolerance,-case_z/2])
-            cube([12,case_y+2,case_z]); // trim
-    }
-}
-
-module rail_cutout() {
-    cube([sled_x + sled_rail_tolerance, sled_y + sled_rail_tolerance,2 + sled_rail_tolerance * 2]);
+        cylinder(r = mini_rail_x - sled_rail_tolerance, h = case_y);
 }
 
 module mini_sled() {
@@ -205,62 +180,10 @@ module mini_sled_plate() {
     }
 }
 
-module sled() {
-    difference() {
-        union() {
-            translate([-24.5,0,0])
-                standoff();
-            translate([24.5,0,0])
-                standoff();
-            translate([-24.5,-58,0])
-                standoff();
-            translate([24.5,-58,0])
-                standoff();
-            linear_extrude(2)
-                difference() {
-                    hull() {
-                        translate([-(sled_x-10)/2,0])
-                            circle(r = 5);
-                        translate([-sled_x/2,-83])
-                            square([10,10]);
-                        translate([(sled_x-20)/2,-83])
-                            square([10,10]);
-                        translate([(sled_x-10)/2,0])
-                            circle(r = 5);
-                    }
-                    hull() {
-                        translate([-(sled_x-10)/2+10,-10])
-                            circle(r = 5);
-                        translate([-(sled_x-10)/2+10,-83+10])
-                            circle(r = 5);
-                        translate([(sled_x-10)/2-10,-83+10])
-                            circle(r = 5);
-                        translate([(sled_x-10)/2-10,-10])
-                            circle(r = 5);
-                    }
-                }
-            translate([0,7-sled_y,0])
-                grip();
-            //# old_grip();
-        }
-        translate([-24.5,0,-1])
-            cylinder(h=10, d = 2.5);
-        translate([24.5,0,-1])
-            cylinder(h=10, d = 2.5);
-        translate([-24.5,-58,-1])
-            cylinder(h=10, d = 2.5);
-        translate([24.5,-58,-1])
-            cylinder(h=10, d = 2.5);
-    }
-}
-
 module mini_standoff() {
         cylinder(h = sled_standoff_height, r = 3);
 }
 
-module standoff() {
-        cylinder(h=7, r = 3);
-}
 
 module mini_grip() {
     intersection() {
@@ -277,31 +200,5 @@ module mini_grip() {
             translate([mini_sled_x/2-7,-5,0])
                 circle(r = 5);
         }
-    }
-}
-
-module grip() {
-    intersection() {
-        translate([-sled_x/2,-10,0])
-            cube([sled_x,10,10]);
-    linear_extrude(7)
-        hull() {
-            translate([5-sled_x/2,0,0])
-                circle(r = 5);
-            translate([sled_x/2 - 5,0,0])
-                circle(r = 5);
-            translate([7-sled_x/2,-5,0])
-                circle(r = 5);
-            translate([sled_x/2-7,-5,0])
-                circle(r = 5);
-        }
-    }
-}
-
-module old_grip() {
-    intersection() {
-        translate([-sled_x/2,-103,0])
-            cube([sled_x,20,10]);
-        cylinder(h=7, r=100);
     }
 }

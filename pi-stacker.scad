@@ -12,7 +12,7 @@ pi_connector_z = 8;
 
 sled_x = 65;
 sled_y = 90;
-sled_height = 7;
+sled_height = 10;
 sled_rail_tolerance = 0.2;
 sled_standoff_height = 2;
 rail_x = 2;
@@ -23,8 +23,11 @@ fan_thickness = 12;
 fan_x = 40.2;
 fan_z = 40.2;
 
+rod_diameter = 5;
+
+
 case_x = 44.45 * 2 - 0.794;
-case_y = sled_y + fan_thickness;
+case_y = sled_y + fan_thickness + rod_diameter;
 case_z = 44.45 * 1 - 0.794;
 case_wall_thickness = (case_z - fan_z) / 2;
 
@@ -32,22 +35,24 @@ inner_wall_offset = case_x - (mini_sled_x + rail_x + sled_rail_tolerance * 2);
 
 mesh_corner_radius = 2;
 mesh_size = 9;
-mesh_thickness = 2;
-
+mesh_thickness = case_wall_thickness;
 
 /*
 translate([mini_sled_x/2 + inner_wall_offset + sled_rail_tolerance, mini_sled_y-7 ,sled_height])
     mini_sled();
 */
+
 housing();
 
 /*
 translate([sled_x/2 + inner_wall_offset + sled_rail_tolerance,sled_y-7,sled_height])
     sled();
-
+/*
 translate([ case_wall_thickness / 2,0,case_z - 27.8 - case_wall_thickness])
     # oled_pcb();
 */
+
+
 module oled_pcb() {
     cube([27.5,2.7,27.8]);
 }
@@ -71,35 +76,104 @@ module housing() {
                 translate([case_wall_thickness, case_y - case_wall_thickness])
                     circle( r = case_wall_thickness );
             }
-*/
-        union() {
-            case_end();
-            translate([0,case_y - fan_thickness,0])
-                case_end();
-            translate([0, fan_thickness, 0])
-                hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // bottom mesh;
-            translate([0,fan_thickness, case_z - case_wall_thickness])
-                hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // top mesh;
-            translate([case_wall_thickness, fan_thickness, 0])
-                rotate([0,270,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // left mesh;
-            translate([case_x, fan_thickness, 0])
-                rotate([0,270,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - 2 * fan_thickness, z = case_wall_thickness);  // right mesh;
-            translate([inner_wall_offset, fan_thickness, 0])
-                rotate([0,270,0])
-                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + sled_standoff_height, y = case_y - 2 * fan_thickness + case_wall_thickness, z = case_wall_thickness);  // inner bottom mes;
-            translate([inner_wall_offset - case_wall_thickness + mini_rail_x - sled_rail_tolerance / 2, case_y, sled_height + mini_sled_z/2])
-                mini_rails();
+*/  
+        difference() {
+            union() {
+                case_front_end();
+                translate([0,case_y - rod_diameter - fan_thickness,0])
+                    case_back_end();
+                translate([0, fan_thickness, 0])
+                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - rod_diameter - 2 * fan_thickness, z = case_wall_thickness);  // bottom mesh;
+                translate([0,fan_thickness, case_z - case_wall_thickness])
+                    hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_x, y = case_y - rod_diameter - 2 * fan_thickness, z = case_wall_thickness);  // top mesh;
+                translate([case_wall_thickness, fan_thickness, 0])
+                    rotate([0,270,0])
+                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - rod_diameter - 2 * fan_thickness, z = case_wall_thickness);  // left mesh;
+                translate([case_x, fan_thickness, 0])
+                    rotate([0,270,0])
+                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = case_z, y = case_y - rod_diameter - 2 * fan_thickness, z = case_wall_thickness);  // right mesh;
+                translate([inner_wall_offset, fan_thickness, 0])
+                    rotate([0,270,0])
+                        hex_mesh(corner_radius = mesh_corner_radius, size = mesh_size, thickness = mesh_thickness, x = sled_height + mini_sled_z + sled_standoff_height, y = case_y - rod_diameter - 2 * fan_thickness, z = case_wall_thickness);  // inner bottom mes;
+                translate([inner_wall_offset - case_wall_thickness + mini_rail_x - sled_rail_tolerance / 2, case_y, sled_height + mini_sled_z/2])
+                    mini_rails();
+                translate([inner_wall_offset + (case_y - inner_wall_offset - fan_x) / 4,case_y - fan_thickness - rod_diameter - case_wall_thickness,0])
+                    fan_mount();
+/*                    
+                translate([case_wall_thickness,rod_diameter,rod_diameter])
+                    rotate([0,90,0])
+                        rod_reinforcement();
+                translate([inner_wall_offset,rod_diameter,rod_diameter])
+                    rotate([0,90,0])
+                        rod_reinforcement();
+                translate([case_x-case_wall_thickness,rod_diameter,rod_diameter])
+                    rotate([0,-90,0])
+                        rod_reinforcement();
+                translate([inner_wall_offset-case_wall_thickness,rod_diameter,rod_diameter])
+                    rotate([0,-90,0])
+                        rod_reinforcement();
+                translate([0,case_y-rod_diameter*2,0]) {
+                    translate([case_wall_thickness,rod_diameter,rod_diameter])
+                        rotate([0,90,0])
+                            rod_reinforcement();
+                    translate([inner_wall_offset,rod_diameter,rod_diameter])
+                        rotate([0,90,0])
+                            rod_reinforcement();
+                    translate([case_x-case_wall_thickness,rod_diameter,rod_diameter])
+                        rotate([0,-90,0])
+                            rod_reinforcement();
+                    translate([inner_wall_offset-case_wall_thickness,rod_diameter,rod_diameter])
+                        rotate([0,-90,0])
+                            rod_reinforcement();
+                }
+                */
+            }
+            translate([-0.5,rod_diameter,rod_diameter])
+                rotate([0,90,0])
+                    rod_hole_x();
+            translate([-0.5,case_y - rod_diameter,rod_diameter])
+                rotate([0,90,0])
+                    rod_hole_x();
+            translate([rod_diameter,rod_diameter,-0.5])
+                rod_hole_z();
+            translate([rod_diameter,case_y - rod_diameter,-0.5])
+                rod_hole_z();
         }
+
     }
 }
 
-module fan_mount() {
+module rod_hole_z() {
+    cylinder(d = rod_diameter, h = case_z + 1);
+}
+
+
+module rod_hole_x() {
+    cylinder(d = rod_diameter, h = case_x + 1);
+}
+
+module rod_reinforcement() {
+    cylinder(d1 = rod_diameter * 2, d2 = rod_diameter + 0.8, h = rod_diameter);
 
 }
 
-module case_end() {
+module fan_mount() {
+    translate([0,0,case_wall_thickness])
+        rotate([270,0,0])
+            cylinder(d = case_wall_thickness, h = fan_thickness + rod_diameter + case_wall_thickness);
+    translate([fan_x,0,case_wall_thickness])
+        rotate([270,0,0])
+            cylinder(d = case_wall_thickness, h = fan_thickness + rod_diameter + case_wall_thickness);
+    translate([fan_x,0,case_wall_thickness + fan_z])
+        rotate([270,0,0])
+            cylinder(d = case_wall_thickness, h = fan_thickness + rod_diameter + case_wall_thickness);
+    translate([0,0,case_wall_thickness + fan_z])
+        rotate([270,0,0])
+            cylinder(d = case_wall_thickness, h = fan_thickness + rod_diameter + case_wall_thickness);
+
+}
+
+module case_front_end() {
     cube([case_x, fan_thickness, case_wall_thickness]);
     translate([0,0,case_z - case_wall_thickness])
         cube([case_x, fan_thickness, case_wall_thickness]);
@@ -107,8 +181,16 @@ module case_end() {
     translate([case_x - case_wall_thickness, 0, 0])
         cube([case_wall_thickness, fan_thickness, case_z]);
     translate([inner_wall_offset - case_wall_thickness, 0, 0])
-        cube([case_wall_thickness, fan_thickness, case_z]);
+        cube([case_wall_thickness, fan_thickness, sled_height + mini_sled_z + sled_standoff_height]);    
 }
+
+module case_back_end() {
+    scale([1,(fan_thickness + rod_diameter) / fan_thickness,1])
+        case_front_end();
+    translate([inner_wall_offset - case_wall_thickness, 0, 0])
+        cube([case_wall_thickness, fan_thickness + rod_diameter, case_z]);
+}
+
 
 module mini_rails() {
     mini_rail();
